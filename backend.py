@@ -100,7 +100,9 @@ def ingest_pdf(file_bytes: bytes, thread_id: str, filename: Optional[str] = None
 # 3. Tools
 # ---------------------------------------------------------------------------
 
-search_tool = DuckDuckGoSearchRun(region="us-en")
+search_tool = DuckDuckGoSearchRun(
+    api_wrapper=DuckDuckGoSearchAPIWrapper(region="us-en")
+)
 
 
 @tool
