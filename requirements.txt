@@ -1,0 +1,26 @@
+# Core LLM / Agent
+langchain-core
+langchain-community
+langchain-text-splitters
+langchain-google-genai
+langchain-huggingface
+langgraph
+langgraph-checkpoint-sqlite
+
+# Vector store
+faiss-cpu
+
+# Document loading
+pypdf
+
+# Web search
+duckduckgo-search
+
+# HTTP
+requests
+
+# Environment
+python-dotenv
+
+# Frontend
+streamlit
