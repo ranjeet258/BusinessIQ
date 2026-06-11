@@ -15,6 +15,8 @@ pypdf
 
 # Web search
 duckduckgo-search
+ddgs
+
 
 # HTTP
 requests
@@ -24,3 +26,7 @@ python-dotenv
 
 # Frontend
 streamlit
+
+
+duckduckgo-search
+ddgs
