@@ -1,32 +1,20 @@
-# Core LLM / Agent
-langchain-core
-langchain-community
-langchain-text-splitters
-langchain-google-genai
-langchain-huggingface
-langgraph
-langgraph-checkpoint-sqlite
-
-# Vector store
-faiss-cpu
-
-# Document loading
-pypdf
-
-# Web search
-duckduckgo-search
-ddgs
-
-
-# HTTP
-requests
-
-# Environment
-python-dotenv
-
-# Frontend
-streamlit
-
-
-duckduckgo-search
-ddgs
+streamlit>=1.32.0
+pandas>=2.2.0
+duckdb>=0.10.0
+openpyxl>=3.1.2
+langchain>=0.1.13
+langchain-google-genai>=1.0.0
+langchain-huggingface>=0.1.0
+langchain-community>=0.0.32
+langchain-core>=0.1.33
+langgraph>=0.0.30
+pydantic>=2.6.4
+faiss-cpu>=1.8.0
+sentence-transformers>=2.6.0
+tiktoken>=0.6.0
+PyPDF2>=3.0.1
+pdfplumber>=0.11.0
+plotly>=5.20.0
+reportlab>=4.1.0
+python-pptx>=0.6.23
+python-dotenv>=1.0.1

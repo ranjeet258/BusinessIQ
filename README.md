@@ -1,77 +1,119 @@
-# Multi-Utility RAG Chatbot
+# BusinessIQ 🤖📊💬
 
-A Streamlit chatbot powered by **LangGraph** + **Gemini 2.5 Flash** that can:
+**Agentic AI Platform for Analytics, RAG, and WhatsApp Marketing Automation**
 
-- 📄 Answer questions about an uploaded PDF (RAG via FAISS + HuggingFace embeddings)
-- 🌐 Search the web (DuckDuckGo)
-- 📈 Look up live stock prices (Alpha Vantage)
-- 🧮 Perform arithmetic (calculator tool)
-- 💾 Persist conversation history across sessions (SQLite checkpointer)
+BusinessIQ is a cutting-edge, multi-modal AI platform built to revolutionize how businesses interact with their data, documents, and customers. By leveraging state-of-the-art agentic workflows, it unifies tabular data analytics, natural language document querying (RAG), and WhatsApp marketing automation into a single, cohesive, premium Streamlit interface.
 
 ---
 
-## Project structure
+## 🌟 Key Features
 
-```
-.
-├── app.py           # Streamlit frontend
-├── backend.py       # LangGraph agent, tools, PDF ingestion
-├── requirements.txt # Python dependencies
-├── .env.example     # Environment variable template
-└── .streamlit/
-    └── secrets.toml.example   # Streamlit Cloud secrets template
+*   **Conversational Data Analytics:** Upload your CSV or Excel files and instantly "talk" to your data. Behind the scenes, an intelligent SQL Agent converts natural language into optimized SQL queries, executing them at lightning speed.
+*   **Intelligent Document Retrieval (RAG):** Upload PDF reports or documents and extract answers seamlessly. Using advanced Retrieval-Augmented Generation, the system understands the context of your files and provides accurate, cited responses.
+*   **Auto-Generated Executive Insights:** Automatically analyzes uploaded datasets to generate comprehensive executive summaries and extract key performance indicators (KPIs) using Google's Gemini models.
+*   **Dynamic Live Dashboarding:** View your tabular data, filtered query results, and deep-dive analytics in a rich, interactive dashboard interface powered by Plotly and Streamlit.
+*   **WhatsApp Marketing Automation:** Features a specialized agent routing mechanism to handle WhatsApp marketing campaigns, automation logic, and customer outreach seamlessly.
+*   **Multi-Agent Orchestration:** Intelligently routes user queries to the most appropriate specialized agent (SQL, RAG, Analysis, or WhatsApp) for maximum accuracy and efficiency.
+
+---
+
+## 🛠️ Techniques Used & Technical Architecture
+
+The core of BusinessIQ is designed around an **Agentic AI Workflow** using an intelligent router to delegate tasks. 
+
+### 1. Agentic Orchestration (LangGraph & LangChain)
+Instead of a single monolithic prompt, the application uses **LangGraph** to build a `StateGraph`. A sophisticated routing function analyzes the user's intent and delegates the query to one of four specialized nodes:
+*   `SQL Agent`: For tabular data querying.
+*   `RAG Agent`: For document-based question answering.
+*   `Analysis Agent`: For generating analytical insights.
+*   `WhatsApp Agent`: For marketing automation.
+
+### 2. In-Memory Tabular Processing (DuckDB)
+For blazing-fast data analytics, the platform utilizes **DuckDB**. When CSV/Excel files are uploaded, they are parsed via `pandas` and registered as virtual tables in DuckDB. The LLM generates SQL queries against these tables, providing real-time data filtering without the overhead of a traditional database.
+
+### 3. Retrieval-Augmented Generation (FAISS & HuggingFace)
+Document intelligence is powered by a robust RAG pipeline:
+*   **Parsing:** Extracts text from PDFs using `pdfplumber` and `PyPDF2`.
+*   **Embeddings:** Generates dense vector representations using locally run open-source models via `sentence-transformers` and `HuggingFace`.
+*   **Vector Store:** Stores and searches embeddings efficiently using **FAISS** (Facebook AI Similarity Search).
+
+### 4. Generative AI Models (Google Gemini)
+Leverages Google's **Gemini models** (e.g., `gemini-2.5-flash`) via `langchain-google-genai` for reasoning, SQL generation, executive summarization, and conversational responses.
+
+### 5. Premium Interactive Frontend
+The user interface is built on **Streamlit** with custom CSS styling to deliver a premium, dark-mode aesthetic (glassmorphism effects, modern typography, responsive layouts).
+
+---
+
+## 📂 Project Structure
+
+```text
+📦 Multi-mode-chatbot
+ ┣ 📂 agents               # LangGraph nodes and agent definitions
+ ┃ ┣ 📜 analysis_agent.py  # Agent for deep data analysis
+ ┃ ┣ 📜 rag_agent.py       # RAG logic for documents
+ ┃ ┣ 📜 sql_agent.py       # Text-to-SQL logic
+ ┃ ┣ 📜 whatsapp_agent.py  # WhatsApp automation agent
+ ┃ ┗ 📜 workflow.py        # LangGraph state machine orchestrator
+ ┣ 📂 core                 # Core configurations and state types
+ ┃ ┗ 📜 state.py           # LangGraph AgentState definition
+ ┣ 📂 data                 # Data ingestion and storage managers
+ ┃ ┣ 📜 db_manager.py      # DuckDB connection and query execution
+ ┃ ┣ 📜 document_parser.py # PDF and Tabular file parsing logic
+ ┃ ┗ 📜 vector_store.py    # FAISS vector database management
+ ┣ 📂 ui                   # Streamlit frontend components
+ ┃ ┣ 📜 chat.py            # Central chat interface
+ ┃ ┣ 📜 dashboard.py       # Analytics and KPI dashboard
+ ┃ ┗ 📜 sidebar.py         # Configuration and file upload sidebar
+ ┣ 📜 app.py               # Main Streamlit application entry point
+ ┣ 📜 requirements.txt     # Python dependencies
+ ┗ 📜 .env                 # Environment variables
 ```
 
 ---
 
-## Local setup
+## 🚀 Installation & Setup
 
-```bash
-# 1. Clone the repo
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd Multi-mode-chatbot
+   ```
 
-# 2. Create and activate a virtual environment
-python -m venv .venv
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
+2. **Create and activate a virtual environment:**
+   ```bash
+   python -m venv myenv
+   # On Windows:
+   myenv\Scripts\activate
+   # On macOS/Linux:
+   source myenv/bin/activate
+   ```
 
-# 3. Install dependencies
-pip install -r requirements.txt
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-# 4. Create your .env file
-cp .env.example .env
-# Edit .env and fill in your API keys
+4. **Environment Variables:**
+   Create a `.env` file in the root directory (or configure keys directly in the app sidebar) and add your API keys:
+   ```env
+   GEMINI_API_KEY=your_google_gemini_api_key
+   HUGGINGFACE_API_KEY=your_huggingface_token
+   ```
 
-# 5. Run the app
-streamlit run app.py
-```
-
----
-
-## Streamlit Cloud deployment
-
-1. Push the repo to GitHub (`.env` is in `.gitignore` — do not push it).
-2. Go to [share.streamlit.io](https://share.streamlit.io) → **New app** → select your repo.
-3. Set **Main file path** to `app.py`.
-4. Open **Advanced settings → Secrets** and paste:
-
-```toml
-GOOGLE_API_KEY = "..."
-HUGGINGFACEHUB_API_TOKEN = "..."
-ALPHA_VANTAGE_API_KEY = "..."
-```
-
-5. Click **Deploy**.
-
-> **Note:** Streamlit Cloud has an ephemeral filesystem, so `chatbot.db` (conversation history)
-> resets on each redeployment. PDF retrievers are also in-memory and reset on restarts.
+5. **Run the Application:**
+   ```bash
+   streamlit run app.py
+   ```
 
 ---
 
-## API keys needed
+## 💡 Usage Guide
 
-| Key | Where to get it |
-|-----|-----------------|
-| `GOOGLE_API_KEY` | [Google AI Studio](https://aistudio.google.com/app/apikey) |
-| `HUGGINGFACEHUB_API_TOKEN` | [HuggingFace Settings](https://huggingface.co/settings/tokens) |
-| `ALPHA_VANTAGE_API_KEY` | [Alpha Vantage](https://www.alphavantage.co/support/#api-key) (free tier available) |
+1. **Configure Keys:** Upon launching the app, enter your Gemini API Key and HuggingFace API Token in the sidebar.
+2. **Upload Data:** Upload CSV or Excel files for tabular analytics, or PDF files for document Q&A.
+3. **Chat:** Ask questions in the chat interface. For example:
+   *   *"What were our top 5 products by revenue last month?"* (Triggers SQL Agent)
+   *   *"Summarize the Q3 financial report PDF."* (Triggers RAG Agent)
+   *   *"Draft a WhatsApp marketing campaign for the new product launch."* (Triggers WhatsApp Agent)
+4. **Explore the Dashboard:** Switch to the dashboard panel to view your raw tabular data, live filtered query results, auto-generated executive summaries, and KPI metrics.

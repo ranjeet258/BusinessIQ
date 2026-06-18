@@ -1,219 +1,123 @@
-import uuid
-
 import streamlit as st
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from ui.sidebar import render_sidebar
+from ui.chat import render_chat_interface
+from ui.dashboard import render_dashboard
+from data.db_manager import DuckDBManager
+from data.vector_store import VectorStoreManager
+from data.document_parser import parse_tabular_data, parse_pdf
+from agents.workflow import build_graph
 
-from backend import (
-    chatbot,
-    ingest_pdf,
-    retrieve_all_threads,
-    thread_document_metadata,
-)
-
-# ---------------------------------------------------------------------------
-# Page config
-# ---------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
+# Page Configuration & Styling
+# -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Multi-Utility Chatbot",
-    page_icon="🤖",
+    page_title="BusinessIQ: Agentic AI Platform for Analytics, RAG, and 💬 WhatsApp Marketing Automation",
     layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# ---------------------------------------------------------------------------
-# Utilities
-# ---------------------------------------------------------------------------
-
-
-def new_thread_id() -> str:
-    return str(uuid.uuid4())
-
-
-def reset_chat() -> None:
-    tid = new_thread_id()
-    st.session_state["thread_id"] = tid
-    _ensure_thread(tid)
-    st.session_state["message_history"] = []
-
-
-def _ensure_thread(thread_id: str) -> None:
-    if thread_id not in st.session_state["chat_threads"]:
-        st.session_state["chat_threads"].append(thread_id)
-
-
-def load_conversation(thread_id: str) -> list:
-    state = chatbot.get_state(config={"configurable": {"thread_id": thread_id}})
-    messages = state.values.get("messages", [])
-    result = []
-    for msg in messages:
-        if isinstance(msg, HumanMessage):
-            result.append({"role": "user", "content": msg.content})
-        elif isinstance(msg, AIMessage):
-            content = msg.content
-            if isinstance(content, list):
-                content = "".join(
-                    item.get("text", "") for item in content if isinstance(item, dict)
-                )
-            if content:
-                result.append({"role": "assistant", "content": content})
-    return result
-
-
-# ---------------------------------------------------------------------------
-# Session state initialisation
-# ---------------------------------------------------------------------------
-
-if "message_history" not in st.session_state:
-    st.session_state["message_history"] = []
-
-if "thread_id" not in st.session_state:
-    st.session_state["thread_id"] = new_thread_id()
-
-if "chat_threads" not in st.session_state:
-    st.session_state["chat_threads"] = retrieve_all_threads()
-
-if "ingested_docs" not in st.session_state:
-    st.session_state["ingested_docs"] = {}
-
-_ensure_thread(st.session_state["thread_id"])
-
-thread_key: str = st.session_state["thread_id"]
-thread_docs: dict = st.session_state["ingested_docs"].setdefault(thread_key, {})
-selected_thread = None
-
-# ---------------------------------------------------------------------------
-# Sidebar
-# ---------------------------------------------------------------------------
-
-st.sidebar.title("🤖 LangGraph RAG Chatbot")
-st.sidebar.markdown(f"**Thread:** `{thread_key[:8]}…`")
-
-if st.sidebar.button("➕ New Chat", use_container_width=True):
-    reset_chat()
-    st.rerun()
-
-st.sidebar.divider()
-
-# Document status
-if thread_docs:
-    latest = list(thread_docs.values())[-1]
-    st.sidebar.success(
-        f"📄 **{latest.get('filename')}**  \n"
-        f"{latest.get('chunks')} chunks · {latest.get('documents')} pages"
-    )
-else:
-    st.sidebar.info("No PDF indexed for this chat.")
-
-uploaded_pdf = st.sidebar.file_uploader("Upload a PDF", type=["pdf"])
-if uploaded_pdf:
-    if uploaded_pdf.name in thread_docs:
-        st.sidebar.info(f"`{uploaded_pdf.name}` is already indexed.")
-    else:
-        with st.sidebar.status("Indexing PDF…", expanded=True) as status_box:
-            summary = ingest_pdf(
-                uploaded_pdf.getvalue(),
-                thread_id=thread_key,
-                filename=uploaded_pdf.name,
-            )
-            thread_docs[uploaded_pdf.name] = summary
-            status_box.update(label="✅ PDF indexed", state="complete", expanded=False)
-
-# Past conversations
-st.sidebar.divider()
-st.sidebar.subheader("Past conversations")
-past_threads = st.session_state["chat_threads"][::-1]
-if not past_threads:
-    st.sidebar.caption("No past conversations yet.")
-else:
-    for tid in past_threads:
-        label = f"{'▶ ' if tid == thread_key else ''}{str(tid)[:8]}…"
-        if st.sidebar.button(label, key=f"thread-{tid}", use_container_width=True):
-            selected_thread = tid
-
-# ---------------------------------------------------------------------------
-# Main chat area
-# ---------------------------------------------------------------------------
-
-st.title("Multi-Utility Chatbot")
-st.caption("Ask about your PDF, search the web, check stock prices, or do math.")
-
-# Render history
-for msg in st.session_state["message_history"]:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
-
-# Chat input
-user_input = st.chat_input("Ask anything…")
-
-if user_input:
-    st.session_state["message_history"].append({"role": "user", "content": user_input})
-    with st.chat_message("user"):
-        st.markdown(user_input)
-
-    config = {
-        "configurable": {"thread_id": thread_key},
-        "metadata": {"thread_id": thread_key},
-        "run_name": "chat_turn",
+# Premium Aesthetic CSS
+st.markdown("""
+<style>
+    .stApp {
+        background-color: #0e1117;
+        color: #fafafa;
     }
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Inter', sans-serif;
+        color: #ffffff;
+    }
+    .stTextInput>div>div>input {
+        border-radius: 8px;
+        border: 1px solid #4B4B4B;
+        transition: all 0.3s ease;
+    }
+    .stTextInput>div>div>input:focus {
+        border-color: #00A67E;
+        box-shadow: 0 0 0 2px rgba(0, 166, 126, 0.2);
+    }
+    div[data-testid="metric-container"] {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 15px;
+        backdrop-filter: blur(10px);
+        transition: transform 0.2s;
+    }
+    div[data-testid="metric-container"]:hover {
+        transform: translateY(-2px);
+    }
+    hr { border-color: #333333; }
+</style>
+""", unsafe_allow_html=True)
 
-    with st.chat_message("assistant"):
-        status_holder: dict = {"box": None}
+# -----------------------------------------------------------------------------
+# Main Application Layout
+# -----------------------------------------------------------------------------
+def main():
+    sidebar_config = render_sidebar()
+    
+    gemini_key = sidebar_config["gemini_key"]
+    hf_key = sidebar_config["hf_key"]
+    uploaded_files = sidebar_config["uploaded_files"]
 
-        def _stream_response():
-            for chunk, _ in chatbot.stream(
-                {"messages": [{"role": "user", "content": user_input}]},
-                config=config,
-                stream_mode="messages",
-            ):
-                # Show tool-use status
-                if isinstance(chunk, ToolMessage):
-                    tool_name = getattr(chunk, "name", "tool")
-                    if status_holder["box"] is None:
-                        status_holder["box"] = st.status(
-                            f"🔧 Using `{tool_name}`…", expanded=True
-                        )
-                    else:
-                        status_holder["box"].update(
-                            label=f"🔧 Using `{tool_name}`…",
-                            state="running",
-                            expanded=True,
-                        )
+    # Initialize Data Managers
+    if "db_manager" not in st.session_state:
+        st.session_state.db_manager = DuckDBManager()
+        
+    if "vector_manager" not in st.session_state and hf_key:
+        try:
+            st.session_state.vector_manager = VectorStoreManager(hf_key)
+        except Exception as e:
+            st.sidebar.error(f"Error initializing Vector Store: {e}")
 
-                # Yield AI text tokens
-                if isinstance(chunk, AIMessage):
-                    if isinstance(chunk.content, list):
-                        yield "".join(
-                            item.get("text", "")
-                            for item in chunk.content
-                            if isinstance(item, dict)
-                        )
-                    elif isinstance(chunk.content, str) and chunk.content:
-                        yield chunk.content
+    # Process Uploaded Files
+    if uploaded_files and "processed_files" not in st.session_state:
+        st.session_state.processed_files = set()
 
-        ai_reply = st.write_stream(_stream_response())
+    if uploaded_files:
+        for file in uploaded_files:
+            if file.name not in st.session_state.processed_files:
+                with st.spinner(f"Processing {file.name}..."):
+                    try:
+                        file_bytes = file.read()
+                        if file.name.endswith(('.csv', '.xlsx', '.xls')):
+                            df = parse_tabular_data(file.name, file_bytes)
+                            import re
+                            raw_name = file.name.split('.')[0].replace(' ', '_').replace('-', '_').lower()
+                            table_name = re.sub(r'[^a-z0-9_]', '', raw_name)
+                            if not table_name or table_name[0].isdigit():
+                                table_name = 't_' + table_name
+                            st.session_state.db_manager.register_dataframe(table_name, df)
+                            st.session_state.processed_files.add(file.name)
+                            st.sidebar.success(f"{file.name} tabular data loaded!")
+                        elif file.name.endswith('.pdf'):
+                            if "vector_manager" in st.session_state:
+                                docs = parse_pdf(file_bytes)
+                                st.session_state.vector_manager.ingest_documents(docs)
+                                st.session_state.processed_files.add(file.name)
+                                st.sidebar.success(f"{file.name} PDF loaded!")
+                            else:
+                                st.sidebar.warning("Please enter HuggingFace Token to process PDFs.")
+                    except Exception as e:
+                        st.sidebar.error(f"Error processing {file.name}: {e}")
 
-        if status_holder["box"] is not None:
-            status_holder["box"].update(
-                label="✅ Done", state="complete", expanded=False
-            )
-
-    st.session_state["message_history"].append(
-        {"role": "assistant", "content": ai_reply}
-    )
-
-    doc_meta = thread_document_metadata(thread_key)
-    if doc_meta:
-        st.caption(
-            f"📄 {doc_meta.get('filename')} — "
-            f"{doc_meta.get('chunks')} chunks · {doc_meta.get('documents')} pages"
+    # Build LangGraph Workflow
+    if gemini_key and "vector_manager" in st.session_state:
+        st.session_state.workflow = build_graph(
+            st.session_state.db_manager,
+            st.session_state.vector_manager,
+            gemini_key
         )
 
-# ---------------------------------------------------------------------------
-# Thread switching (sidebar click)
-# ---------------------------------------------------------------------------
+    # Render Layout
+    chat_col, dash_col = st.columns([1, 1], gap="large")
+    
+    with chat_col:
+        render_chat_interface()
+        
+    with dash_col:
+        render_dashboard()
 
-if selected_thread:
-    st.session_state["thread_id"] = selected_thread
-    st.session_state["message_history"] = load_conversation(selected_thread)
-    st.session_state["ingested_docs"].setdefault(str(selected_thread), {})
-    st.rerun()
+if __name__ == "__main__":
+    main()
