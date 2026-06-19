@@ -6,6 +6,14 @@ BusinessIQ is a cutting-edge, multi-modal AI platform built to revolutionize how
 
 ---
 
+## 🎥 Demo / How it works
+
+Watch this quick video demonstrating how BusinessIQ works: 
+
+[![BusinessIQ Demo](https://img.youtube.com/vi/GhUTTLJSlvU/maxresdefault.jpg)](https://youtu.be/GhUTTLJSlvU)
+
+---
+
 ## 🌟 Key Features
 
 *   **Conversational Data Analytics:** Upload your CSV or Excel files and instantly "talk" to your data. Behind the scenes, an intelligent SQL Agent converts natural language into optimized SQL queries, executing them at lightning speed.
@@ -38,7 +46,7 @@ Document intelligence is powered by a robust RAG pipeline:
 *   **Vector Store:** Stores and searches embeddings efficiently using **FAISS** (Facebook AI Similarity Search).
 
 ### 4. Generative AI Models (Google Gemini)
-Leverages Google's **Gemini models** (e.g., `gemini-2.5-flash`) via `langchain-google-genai` for reasoning, SQL generation, executive summarization, and conversational responses.
+Leverages Google's **Gemini models** (e.g., `gemini-2.5-flash-lite`) via `langchain-google-genai` for reasoning, SQL generation, executive summarization, and conversational responses.
 
 ### 5. Premium Interactive Frontend
 The user interface is built on **Streamlit** with custom CSS styling to deliver a premium, dark-mode aesthetic (glassmorphism effects, modern typography, responsive layouts).

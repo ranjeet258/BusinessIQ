@@ -78,7 +78,7 @@ def render_dashboard():
                                 from langchain_google_genai import ChatGoogleGenerativeAI
                                 from langchain_core.messages import SystemMessage, HumanMessage
                                 
-                                llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", api_key=gemini_key)
+                                llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", api_key=gemini_key)
                                 preview = df_full.head(10).to_string()
                                 prompt = f"Analyze the following data sample from the uploaded table '{selected_table}'. Provide an executive summary and key insights that are important. Keep it concise but comprehensive.\n\nData Sample:\n{preview}"
                                 

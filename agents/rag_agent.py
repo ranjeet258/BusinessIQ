@@ -4,7 +4,7 @@ from data.vector_store import VectorStoreManager
 from core.state import AgentState
 
 def create_rag_node(vector_manager: VectorStoreManager, gemini_key: str):
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", api_key=gemini_key)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", api_key=gemini_key)
     
     def rag_node(state: AgentState):
         query = state["messages"][-1].content

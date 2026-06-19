@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def create_whatsapp_node(gemini_key: str):
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", api_key=gemini_key)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", api_key=gemini_key)
     
     def whatsapp_node(state: AgentState):
         query = state["messages"][-1].content

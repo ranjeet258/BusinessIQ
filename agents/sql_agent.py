@@ -4,7 +4,7 @@ from data.db_manager import DuckDBManager
 from core.state import AgentState
 
 def create_sql_node(db_manager: DuckDBManager, gemini_key: str):
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", api_key=gemini_key)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", api_key=gemini_key)
     
     def sql_node(state: AgentState):
         query = state["messages"][-1].content

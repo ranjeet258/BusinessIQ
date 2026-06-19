@@ -5,7 +5,7 @@ import pandas as pd
 import json
 
 def create_analysis_node(gemini_key: str):
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", api_key=gemini_key)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", api_key=gemini_key)
     
     def analysis_node(state: AgentState):
         results = state.get("current_sql_results", [])
