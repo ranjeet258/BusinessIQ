@@ -1,6 +1,6 @@
 # BusinessIQ 🤖📊💬
 
-**Agentic AI Platform for Analytics, RAG, and WhatsApp Marketing Automation**
+**Agentic AI Platform for Analytics, RAG, andWhatsApp Marketing Automation**
 
 BusinessIQ is a cutting-edge, multi-modal AI platform built to revolutionize how businesses interact with their data, documents, and customers. By leveraging state-of-the-art agentic workflows, it unifies tabular data analytics, natural language document querying (RAG), and WhatsApp marketing automation into a single, cohesive, premium Streamlit interface.
 
@@ -11,7 +11,6 @@ BusinessIQ is a cutting-edge, multi-modal AI platform built to revolutionize how
 Watch this quick video demonstrating how BusinessIQ works: 
 
 [![BusinessIQ Demo](https://img.youtube.com/vi/GhUTTLJSlvU/maxresdefault.jpg)](https://youtu.be/GhUTTLJSlvU)
-
 ---
 
 ## 🌟 Key Features
@@ -28,6 +27,7 @@ Watch this quick video demonstrating how BusinessIQ works:
 ## 🛠️ Techniques Used & Technical Architecture
 
 The core of BusinessIQ is designed around an **Agentic AI Workflow** using an intelligent router to delegate tasks. 
+![Simple_Architecture](data/Images/Simple_Dia.png)
 
 ### 1. Agentic Orchestration (LangGraph & LangChain)
 Instead of a single monolithic prompt, the application uses **LangGraph** to build a `StateGraph`. A sophisticated routing function analyzes the user's intent and delegates the query to one of four specialized nodes:
@@ -53,7 +53,7 @@ The user interface is built on **Streamlit** with custom CSS styling to deliver 
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 📦 Multi-mode-chatbot

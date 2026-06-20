@@ -6,6 +6,7 @@ from data.db_manager import DuckDBManager
 from data.vector_store import VectorStoreManager
 from data.document_parser import parse_tabular_data, parse_pdf
 from agents.workflow import build_graph
+import re
 
 # -----------------------------------------------------------------------------
 # Page Configuration & Styling
@@ -83,7 +84,6 @@ def main():
                         file_bytes = file.read()
                         if file.name.endswith(('.csv', '.xlsx', '.xls')):
                             df = parse_tabular_data(file.name, file_bytes)
-                            import re
                             raw_name = file.name.split('.')[0].replace(' ', '_').replace('-', '_').lower()
                             table_name = re.sub(r'[^a-z0-9_]', '', raw_name)
                             if not table_name or table_name[0].isdigit():
