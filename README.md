@@ -1,17 +1,18 @@
 # BusinessIQ 🤖📊💬
 
-**Agentic AI Platform for Analytics, RAG, andWhatsApp Marketing Automation**
+## Agentic AI Platform for Analytics, RAG, and WhatsApp Marketing Automation**
 
 BusinessIQ is a cutting-edge, multi-modal AI platform built to revolutionize how businesses interact with their data, documents, and customers. By leveraging state-of-the-art agentic workflows, it unifies tabular data analytics, natural language document querying (RAG), and WhatsApp marketing automation into a single, cohesive, premium Streamlit interface.
 
 ---
 
-## 🎥 Demo / How it works
+## 🎥 Demo Vedio / How it works
 
 Watch this quick video demonstrating how BusinessIQ works: 
 
 [![BusinessIQ Demo](https://img.youtube.com/vi/GhUTTLJSlvU/maxresdefault.jpg)](https://youtu.be/GhUTTLJSlvU)
 ---
+
 
 ## 🌟 Key Features
 
