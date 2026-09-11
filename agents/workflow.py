@@ -1,3 +1,6 @@
+import os
+from typing import Optional
+from dotenv import load_dotenv
 from langgraph.graph import StateGraph, START, END
 from core.state import AgentState
 from agents.sql_agent import create_sql_node
@@ -7,31 +10,65 @@ from agents.whatsapp_agent import create_whatsapp_node
 from data.db_manager import DuckDBManager
 from data.vector_store import VectorStoreManager
 
-def build_graph(db_manager: DuckDBManager, vector_manager: VectorStoreManager, gemini_key: str):
-    workflow = StateGraph(AgentState)
+load_dotenv()
+
+def build_graph(
+    db_manager: Optional[DuckDBManager] = None,
+    vector_manager: Optional[VectorStoreManager] = None,
+    google_api_key: Optional[str] = None
+) -> StateGraph:
+    """Builds and compiles the main LangGraph workflow."""
     
-    sql_node = create_sql_node(db_manager, gemini_key)
-    rag_node = create_rag_node(vector_manager, gemini_key)
-    analysis_node = create_analysis_node(gemini_key)
-    whatsapp_node = create_whatsapp_node(gemini_key)
+    if db_manager is None:
+        db_manager = DuckDBManager()
+        
+    # Use provided key or fallback to env var
+    if google_api_key is None:
+        google_api_key = os.getenv("GOOGLE_API_KEY") or ""
+        
+    if vector_manager is None:
+        hf_token = os.getenv("HUGGINGFACEHUB_API_TOKEN") or ""
+        if hf_token:
+            try:
+                vector_manager = VectorStoreManager(hf_token)
+            except Exception:
+                vector_manager = None
+
+    workflow_graph = StateGraph(AgentState)
+    
+    # Initialize Node Functions
+    sql_node = create_sql_node(db_manager, google_api_key)
+    rag_node = create_rag_node(vector_manager, google_api_key)
+    analysis_node = create_analysis_node(google_api_key)
+    whatsapp_node = create_whatsapp_node(google_api_key)
     
     def router(state: AgentState):
         query = state["messages"][-1].content.lower()
-        if "whatsapp" in query:
+        if any(w in query for w in ["whatsapp", "campaign", "promo", "broadcast"]):
             return "whatsapp"
-        if len(db_manager.tables) > 0:
+        if any(w in query for w in ["pdf", "document", "policy", "contract", "report"]):
+            return "rag"
+        if any(w in query for w in ["sql", "dataset", "excel", "csv", "table", "rows", "sales", "revenue", "kpi", "kpis", "churn", "count"]):
+            return "sql"
+        if db_manager and len(db_manager.tables) > 0:
             return "sql"
         return "rag"
         
-    workflow.add_node("sql", sql_node)
-    workflow.add_node("rag", rag_node)
-    workflow.add_node("analysis", analysis_node)
-    workflow.add_node("whatsapp", whatsapp_node)
+    workflow_graph.add_node("sql", sql_node)
+    workflow_graph.add_node("rag", rag_node)
+    workflow_graph.add_node("analysis", analysis_node)
+    workflow_graph.add_node("whatsapp", whatsapp_node)
     
-    workflow.add_conditional_edges(START, router, {"sql": "sql", "rag": "rag", "whatsapp": "whatsapp"})
-    workflow.add_edge("sql", "analysis")
-    workflow.add_edge("analysis", END)
-    workflow.add_edge("rag", END)
-    workflow.add_edge("whatsapp", END)
+    workflow_graph.add_conditional_edges(START, router, {"sql": "sql", "rag": "rag", "whatsapp": "whatsapp"})
+    workflow_graph.add_edge("sql", "analysis")
+    workflow_graph.add_edge("analysis", END)
+    workflow_graph.add_edge("rag", END)
+    workflow_graph.add_edge("whatsapp", END)
     
-    return workflow.compile()
+    return workflow_graph.compile()
+
+# Default compiled workflow instance for direct import and evaluation
+try:
+    workflow = build_graph()
+except Exception:
+    workflow = None

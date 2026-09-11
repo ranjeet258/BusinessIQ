@@ -14,7 +14,7 @@ def render_sidebar():
             st.rerun()
             
         st.header("1. API Configuration")
-        gemini_key = st.text_input("Google Gemini API Key", type="password", help="Required for the LLM agent")
+        google_api_key = st.text_input("Google API Key", type="password", help="Required for the LLM agent")
         hf_key = st.text_input("HuggingFace API Token", type="password", help="Required for embeddings")
         
         with st.expander("WhatsApp Configuration (Optional)", expanded=False):
@@ -32,8 +32,8 @@ def render_sidebar():
         st.info("Filters will dynamically appear here when tabular data is processed.")
         
         # Save to session state
-        if gemini_key:
-            st.session_state.gemini_key = gemini_key
+        if google_api_key:
+            st.session_state.google_api_key = google_api_key
         if hf_key:
             st.session_state.hf_key = hf_key
         if uploaded_files:
@@ -46,7 +46,7 @@ def render_sidebar():
             st.session_state.wa_phone_id = wa_phone_id
             
         return {
-            "gemini_key": gemini_key,
+            "google_api_key": google_api_key,
             "hf_key": hf_key,
             "uploaded_files": uploaded_files,
             "wa_token": wa_token,

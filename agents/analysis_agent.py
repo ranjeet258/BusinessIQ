@@ -4,8 +4,8 @@ from core.state import AgentState
 import pandas as pd
 import json
 
-def create_analysis_node(gemini_key: str):
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", api_key=gemini_key)
+def create_analysis_node(google_api_key: str):
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", api_key=google_api_key)
     
     def analysis_node(state: AgentState):
         results = state.get("current_sql_results", [])
@@ -39,7 +39,8 @@ Return ONLY valid JSON, no markdown formatting like ```json."""
         
         return {
             "insights": detailed_analysis,
-            "messages": [AIMessage(content=chat_answer)]
+            "messages": [AIMessage(content=chat_answer)],
+            "current_agent": "sql"
         }
         
     return analysis_node

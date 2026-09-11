@@ -2,7 +2,7 @@ from typing import Annotated, TypedDict, Any, List, Dict, Optional
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
-class AgentState(TypedDict):
+class AgentState(TypedDict, total=False):
     """
     Represents the state of the LangGraph agent workflow.
     """
@@ -13,3 +13,5 @@ class AgentState(TypedDict):
     current_sql_results: Optional[List[Dict[str, Any]]]
     generated_charts: List[Any]
     insights: Optional[str]
+    context: Optional[str]
+    current_agent: Optional[str]

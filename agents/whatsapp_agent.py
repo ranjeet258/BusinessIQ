@@ -9,8 +9,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def create_whatsapp_node(gemini_key: str):
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", api_key=gemini_key)
+def create_whatsapp_node(google_api_key: str):
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", api_key=google_api_key)
     
     def whatsapp_node(state: AgentState):
         query = state["messages"][-1].content
@@ -56,18 +56,34 @@ Return ONLY valid JSON."""
             phone_number = re.sub(r'[^\d]', '', phone_number)
             
             if not phone_number:
-                return {"messages": [AIMessage(content="I couldn't detect a valid phone number in your request. Please specify the number.")]}
+                return {
+                    "messages": [AIMessage(content=reframed_message or "I couldn't detect a valid phone number in your request. Please specify the target number.")],
+                    "current_agent": "whatsapp"
+                }
                 
         except Exception as e:
-            return {"messages": [AIMessage(content=f"Error understanding the WhatsApp request: {e}")]}
+            return {
+                "messages": [AIMessage(content=f"Error understanding the WhatsApp request: {e}")],
+                "current_agent": "whatsapp"
+            }
             
         # 2. Send via Meta WhatsApp Cloud API
-        import streamlit as st
-        access_token = st.session_state.get("wa_token") or os.environ.get("WHATSAPP_ACCESS_TOKEN")
-        phone_number_id = st.session_state.get("wa_phone_id") or os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
+        try:
+            import streamlit as st
+            wa_token = st.session_state.get("wa_token") if hasattr(st, "session_state") else None
+            wa_phone_id = st.session_state.get("wa_phone_id") if hasattr(st, "session_state") else None
+        except Exception:
+            wa_token = None
+            wa_phone_id = None
+
+        access_token = wa_token or os.environ.get("WHATSAPP_ACCESS_TOKEN")
+        phone_number_id = wa_phone_id or os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
         
         if not access_token or not phone_number_id:
-            return {"messages": [AIMessage(content="WhatsApp API credentials (WHATSAPP_ACCESS_TOKEN or WHATSAPP_PHONE_NUMBER_ID) are missing in the .env file.")]}
+            return {
+                "messages": [AIMessage(content=f"WhatsApp draft prepared for +{phone_number}:\n\n{reframed_message}\n\n(Note: WhatsApp API credentials not configured in .env)")],
+                "current_agent": "whatsapp"
+            }
             
         url = f"https://graph.facebook.com/v25.0/{phone_number_id}/messages"
         headers = {
@@ -86,11 +102,17 @@ Return ONLY valid JSON."""
         try:
             response = requests.post(url, headers=headers, json=payload)
             response.raise_for_status()
-            return {"messages": [AIMessage(content=f"Successfully sent the advertisement to {phone_number}!\n\n**Message sent:**\n{reframed_message}")]}
+            return {
+                "messages": [AIMessage(content=f"Successfully sent the advertisement to {phone_number}!\n\n**Message sent:**\n{reframed_message}")],
+                "current_agent": "whatsapp"
+            }
         except requests.exceptions.RequestException as e:
             err_msg = str(e)
-            if response.text:
-                err_msg += f" | Details: {response.text}"
-            return {"messages": [AIMessage(content=f"Failed to send WhatsApp message to {phone_number}. Error: {err_msg}")]}
+            if hasattr(e, "response") and e.response is not None and e.response.text:
+                err_msg += f" | Details: {e.response.text}"
+            return {
+                "messages": [AIMessage(content=f"Failed to send WhatsApp message to {phone_number}. Error: {err_msg}")],
+                "current_agent": "whatsapp"
+            }
 
     return whatsapp_node

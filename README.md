@@ -20,6 +20,7 @@ https://github.com/user-attachments/assets/a5067d8a-b4b0-4bd8-929e-d726c204a152
 *   **Dynamic Live Dashboarding:** View your tabular data, filtered query results, and deep-dive analytics in a rich, interactive dashboard interface powered by Plotly and Streamlit.
 *   **WhatsApp Marketing Automation:** Features a specialized agent routing mechanism to handle WhatsApp marketing campaigns, automation logic, and customer outreach seamlessly.
 *   **Multi-Agent Orchestration:** Intelligently routes user queries to the most appropriate specialized agent (SQL, RAG, Analysis, or WhatsApp) for maximum accuracy and efficiency.
+*   **Observability & Evaluation:** Full integration with LangSmith to trace agent decisions, monitor performance, and evaluate LLM responses.
 
 ---
 
@@ -49,6 +50,9 @@ Leverages Google's **Gemini models** (e.g., `gemini-2.5-flash-lite`) via `langch
 
 ### 5. Premium Interactive Frontend
 The user interface is built on **Streamlit** with custom CSS styling to deliver a premium, dark-mode aesthetic (glassmorphism effects, modern typography, responsive layouts).
+
+### 6. Observability & Evaluation (LangSmith)
+Integrated with **LangSmith** for comprehensive debugging, observability, and evaluation of the LangChain agents. This allows for tracing LLM calls, monitoring agent routing decisions, and running automated evaluations on the multi-agent workflows.
 
 ---
 
@@ -104,7 +108,7 @@ The user interface is built on **Streamlit** with custom CSS styling to deliver 
 4. **Environment Variables:**
    Create a `.env` file in the root directory (or configure keys directly in the app sidebar) and add your API keys:
    ```env
-   GEMINI_API_KEY=your_google_gemini_api_key
+   GOOGLE_API_KEY=your_google_api_key
    HUGGINGFACE_API_KEY=your_huggingface_token
    ```
 
@@ -117,7 +121,7 @@ The user interface is built on **Streamlit** with custom CSS styling to deliver 
 
 ## 💡 Usage Guide
 
-1. **Configure Keys:** Upon launching the app, enter your Gemini API Key and HuggingFace API Token in the sidebar.
+1. **Configure Keys:** Upon launching the app, enter your Google API Key and HuggingFace API Token in the sidebar.
 2. **Upload Data:** Upload CSV or Excel files for tabular analytics, or PDF files for document Q&A.
 3. **Chat:** Ask questions in the chat interface. For example:
    *   *"What were our top 5 products by revenue last month?"* (Triggers SQL Agent)
