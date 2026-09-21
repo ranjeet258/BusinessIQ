@@ -15,12 +15,23 @@ def main():
     sidebar_config = render_sidebar()
 
     google_api_key = sidebar_config["google_api_key"]
+    grok_api_key = sidebar_config["grok_api_key"]
     hf_key = sidebar_config["hf_key"]
     uploaded_files = sidebar_config["uploaded_files"]
 
     # Initialize Data Managers
     if "db_manager" not in st.session_state:
         st.session_state.db_manager = DuckDBManager()
+        # Load default Loan_Data
+        import os
+        import pandas as pd
+        default_data_path = os.path.join("data", "Loan_Data.csv")
+        if os.path.exists(default_data_path):
+            try:
+                df = pd.read_csv(default_data_path)
+                st.session_state.db_manager.register_dataframe("loan_data", df)
+            except Exception as e:
+                st.error(f"Failed to load default Loan_Data.csv: {e}")
         
     if "vector_manager" not in st.session_state and hf_key:
         try:
@@ -59,11 +70,13 @@ def main():
                         st.sidebar.error(f"Error processing {file.name}: {e}")
 
     # Build LangGraph Workflow
-    if google_api_key and "vector_manager" in st.session_state:
+    if (google_api_key or grok_api_key or hf_key) and "vector_manager" in st.session_state:
         st.session_state.workflow = build_graph(
             st.session_state.db_manager,
             st.session_state.vector_manager,
-            google_api_key
+            google_api_key=google_api_key,
+            grok_api_key=grok_api_key,
+            hf_key=hf_key
         )
 
     # Render Layout

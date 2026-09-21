@@ -14,7 +14,8 @@ def render_sidebar():
             st.rerun()
             
         st.header("1. API Configuration")
-        google_api_key = st.text_input("Google API Key", type="password", help="Required for the LLM agent")
+        google_api_key = st.text_input("Google API Key", type="password", help="Required for the LLM agent if Grok is not used")
+        grok_api_key = st.text_input("Grok API Key", type="password", help="Alternative to Google API Key")
         hf_key = st.text_input("HuggingFace API Token", type="password", help="Required for embeddings")
         
         with st.expander("WhatsApp Configuration (Optional)", expanded=False):
@@ -34,6 +35,8 @@ def render_sidebar():
         # Save to session state
         if google_api_key:
             st.session_state.google_api_key = google_api_key
+        if grok_api_key:
+            st.session_state.grok_api_key = grok_api_key
         if hf_key:
             st.session_state.hf_key = hf_key
         if uploaded_files:
@@ -47,6 +50,7 @@ def render_sidebar():
             
         return {
             "google_api_key": google_api_key,
+            "grok_api_key": grok_api_key,
             "hf_key": hf_key,
             "uploaded_files": uploaded_files,
             "wa_token": wa_token,

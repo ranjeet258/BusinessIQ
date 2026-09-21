@@ -1,10 +1,25 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
+from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 from langchain_core.messages import AIMessage, SystemMessage
 from data.vector_store import VectorStoreManager
 from core.state import AgentState
 
-def create_rag_node(vector_manager: VectorStoreManager, google_api_key: str):
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", api_key=google_api_key)
+def create_rag_node(vector_manager: VectorStoreManager, google_api_key: str = "", grok_api_key: str = "", hf_key: str = ""):
+    if grok_api_key:
+        llm = ChatOpenAI(model="grok-beta", api_key=grok_api_key, base_url="https://api.x.ai/v1")
+    elif google_api_key:
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", api_key=google_api_key)
+    elif hf_key:
+        hf_endpoint = HuggingFaceEndpoint(
+            repo_id="Qwen/Qwen2.5-72B-Instruct",
+            huggingfacehub_api_token=hf_key,
+            task="text-generation",
+            max_new_tokens=1024
+        )
+        llm = ChatHuggingFace(llm=hf_endpoint)
+    else:
+        raise ValueError("No LLM API key provided")
     
     def rag_node(state: AgentState):
         query = state["messages"][-1].content

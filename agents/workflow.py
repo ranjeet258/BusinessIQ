@@ -15,7 +15,9 @@ load_dotenv()
 def build_graph(
     db_manager: Optional[DuckDBManager] = None,
     vector_manager: Optional[VectorStoreManager] = None,
-    google_api_key: Optional[str] = None
+    google_api_key: Optional[str] = None,
+    grok_api_key: Optional[str] = None,
+    hf_key: Optional[str] = None
 ) -> StateGraph:
     """Builds and compiles the main LangGraph workflow."""
     
@@ -23,24 +25,29 @@ def build_graph(
         db_manager = DuckDBManager()
         
     # Use provided key or fallback to env var
-    if google_api_key is None:
+    if not google_api_key:
         google_api_key = os.getenv("GOOGLE_API_KEY") or ""
         
+    if not grok_api_key:
+        grok_api_key = os.getenv("GROK_API_KEY") or ""
+        
+    if not hf_key:
+        hf_key = os.getenv("HUGGINGFACEHUB_API_TOKEN") or ""
+        
     if vector_manager is None:
-        hf_token = os.getenv("HUGGINGFACEHUB_API_TOKEN") or ""
-        if hf_token:
+        if hf_key:
             try:
-                vector_manager = VectorStoreManager(hf_token)
+                vector_manager = VectorStoreManager(hf_key)
             except Exception:
                 vector_manager = None
 
     workflow_graph = StateGraph(AgentState)
     
     # Initialize Node Functions
-    sql_node = create_sql_node(db_manager, google_api_key)
-    rag_node = create_rag_node(vector_manager, google_api_key)
-    analysis_node = create_analysis_node(google_api_key)
-    whatsapp_node = create_whatsapp_node(google_api_key)
+    sql_node = create_sql_node(db_manager, google_api_key, grok_api_key, hf_key)
+    rag_node = create_rag_node(vector_manager, google_api_key, grok_api_key, hf_key)
+    analysis_node = create_analysis_node(google_api_key, grok_api_key, hf_key)
+    whatsapp_node = create_whatsapp_node(google_api_key, grok_api_key, hf_key)
     
     def router(state: AgentState):
         query = state["messages"][-1].content.lower()

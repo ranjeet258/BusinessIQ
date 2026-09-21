@@ -73,14 +73,30 @@ def render_dashboard():
                         
                     if selected_table not in st.session_state.table_summaries:
                         google_api_key = st.session_state.get("google_api_key")
-                        if google_api_key:
+                        grok_api_key = st.session_state.get("grok_api_key")
+                        hf_key = st.session_state.get("hf_key")
+                        
+                        if google_api_key or grok_api_key or hf_key:
                             with st.spinner("Generating insights..."):
                                 try:
-                                    # Use the cheaper lite model for summarization if desired
-                                    from langchain_google_genai import ChatGoogleGenerativeAI
                                     from langchain_core.messages import SystemMessage, HumanMessage
                                     
-                                    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", api_key=google_api_key)
+                                    if grok_api_key:
+                                        from langchain_openai import ChatOpenAI
+                                        llm = ChatOpenAI(model="grok-beta", api_key=grok_api_key, base_url="https://api.x.ai/v1")
+                                    elif google_api_key:
+                                        from langchain_google_genai import ChatGoogleGenerativeAI
+                                        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", api_key=google_api_key)
+                                    elif hf_key:
+                                        from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
+                                        hf_endpoint = HuggingFaceEndpoint(
+                                            repo_id="Qwen/Qwen2.5-72B-Instruct",
+                                            huggingfacehub_api_token=hf_key,
+                                            task="text-generation",
+                                            max_new_tokens=1024
+                                        )
+                                        llm = ChatHuggingFace(llm=hf_endpoint)
+                                        
                                     preview = df_full.head(10).to_string()
                                     prompt = f"Analyze the following data sample from the uploaded table '{selected_table}'. Provide an executive summary and key insights that are important. Keep it concise but comprehensive.\n\nData Sample:\n{preview}"
                                     
@@ -92,7 +108,7 @@ def render_dashboard():
                                 except Exception as e:
                                     st.error(f"Error generating summary: {e}")
                         else:
-                            st.info("Please configure your Google API Key in the sidebar to automatically generate the executive summary.")
+                            st.info("Please configure an API Key (Google, Grok, or Hugging Face) in the sidebar to automatically generate the executive summary.")
                             
                     if selected_table in st.session_state.table_summaries:
                         st.markdown(st.session_state.table_summaries[selected_table])

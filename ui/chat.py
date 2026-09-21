@@ -13,7 +13,7 @@ def render_chat_interface():
     
     with chat_container:
         if not st.session_state.messages:
-            st.info("Hello! Upload some data, add API keys, and ask me to analyze it.")
+            st.info("Hello! The default `Loan_Data.csv` dataset is loaded. Add your API keys and ask me to analyze it, or upload your own data!")
             
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
